@@ -138,13 +138,12 @@ async def rusnyava_mova(room, message):
     match = botlib.MessageMatch(room, message, bot, PREFIX)
 
     if match.is_not_from_this_bot():
-        message = " ".join(match.args())
-        filtered = ' '.join([w for w in match.args() if not any([sw.search(w) for sw in swearwords])])  # NOQA: E501
+        filtered = ' '.join([w for w in message.body.split(' ') if not any([sw.search(w) for sw in swearwords])])  # NOQA: E501
         try:
             for result in detect_langs(filtered):
                 if result.lang == 'ru' and result.prob > 0.9:
                     await bot.api.send_text_message(room.room_id, "адмін, русня у чаті")  # NOQA: E501
         except LangDetectException as e:
-            print(f"Error in rusnyava_mova:\nCan't detect lang in message: '{message}'. Reason:\n{e}")
+            print(f"Error in rusnyava_mova:\nCan't detect lang in message: '{message.body}'. Reason:\n{e}")  # NOQA: E501
 
 bot.run()
