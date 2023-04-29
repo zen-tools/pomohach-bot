@@ -8,10 +8,19 @@ from markdown import Markdown
 from bs4 import BeautifulSoup
 from langdetect import detect_langs
 from langdetect.lang_detect_exception import LangDetectException
+import toml
 
-creds = botlib.Creds("https://homeserver", "username", "password")
+with open('config.toml', 'r') as f:
+    data = toml.load(f)
+
+credentials = data['credentials']
+
+creds = botlib.Creds(credentials['homeserver'], credentials['username'], credentials['password'])
 bot = botlib.Bot(creds)
 PREFIX = "!"
+
+config = botlib.Config()
+config.load_toml("config.toml")
 
 translating = False
 url = "https://index.minfin.com.ua/ua/russian-invading/casualties/"

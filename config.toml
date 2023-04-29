@@ -1,0 +1,9 @@
+[credentials]
+homeserver = "https://example.org"
+username = ""
+password = ""
+
+[simplematrixbotlib.config]
+join_on_invite = false
+encryption_enabled = false
+emoji_verify = false
