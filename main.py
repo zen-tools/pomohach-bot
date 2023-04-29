@@ -2,6 +2,9 @@ import urllib.request
 import re
 import aiohttp
 import simplematrixbotlib as botlib
+
+from io import StringIO
+from markdown import Markdown
 from bs4 import BeautifulSoup
 from langdetect import detect_langs
 from langdetect.lang_detect_exception import LangDetectException
@@ -41,6 +44,24 @@ swearwords = list(map(lambda x: re.compile(x, re.IGNORECASE), [
     r'(^|\s)(n|п)(o|0|о)(е|e)(б|6)(е|e)н(ь|ъ)(\s|$)',
     r'(\S*)(п(и|e|е)|3\.14)(з|3|c|с)(д|т)(а|a|e|е)(\S*)',
 ]))
+
+
+def unmark_element(element, stream=None):
+    if stream is None:
+        stream = StringIO()
+    if element.text:
+        stream.write(element.text)
+    for sub in element:
+        unmark_element(sub, stream)
+    if element.tail:
+        stream.write(element.tail)
+    return stream.getvalue()
+
+
+# patching Markdown
+Markdown.output_formats["plain"] = unmark_element
+md2txt = Markdown(output_format="plain")
+md2txt.stripTopLevelTags = False
 
 
 async def fetch_data(url):
@@ -136,9 +157,10 @@ async def calculator(room, message):
 @bot.listener.on_message_event
 async def rusnyava_mova(room, message):
     match = botlib.MessageMatch(room, message, bot, PREFIX)
+    msg_text = md2txt.convert(message.body)
 
     if match.is_not_from_this_bot():
-        filtered = ' '.join([w for w in message.body.split(' ') if not any([sw.search(w) for sw in swearwords])])  # NOQA: E501
+        filtered = ' '.join([w for w in msg_text.split(' ') if not any([sw.search(w) for sw in swearwords])])  # NOQA: E501
         try:
             for result in detect_langs(filtered):
                 if result.lang == 'ru' and result.prob > 0.9:
