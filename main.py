@@ -145,6 +145,6 @@ async def rusnyava_mova(room, message):
                 if result.lang == 'ru' and result.prob > 0.9:
                     await bot.api.send_text_message(room.room_id, "адмін, русня у чаті")  # NOQA: E501
         except LangDetectException as e:
-            print(f"Error in rusnyava_mova:\nCan't detect lang in message: '{message}'. Reason:\n{e}")
+            print(f"Error in rusnyava_mova:\nCan't detect lang in message: '{message}'. Reason:\n{e}")  # NOQA: E501
 
 bot.run()
