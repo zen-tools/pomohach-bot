@@ -35,15 +35,6 @@ def vova_yibash():
         print(f"Error in vova_yibash: {e}")
         return []
 
-
-# calculator function
-def calculate(expression):
-    try:
-        return eval(expression)
-    except Exception:
-        return "Invalid expression"
-
-
 @bot.listener.on_message_event
 async def femboj(room, message):
     match = botlib.MessageMatch(room, message, bot, PREFIX)
