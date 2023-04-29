@@ -4,6 +4,7 @@ import aiohttp
 import simplematrixbotlib as botlib
 from bs4 import BeautifulSoup
 from langdetect import detect_langs
+from langdetect.lang_detect_exception import LangDetectException
 
 creds = botlib.Creds("https://homeserver", "username", "password")
 bot = botlib.Bot(creds)
@@ -18,7 +19,34 @@ async def fetch_data(url):
 
 url = "https://index.minfin.com.ua/ua/russian-invading/casualties/"
 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
-
+swearwords = list(map(lambda x: re.compile(x, re.IGNORECASE), [
+    '(^|\s)мля(\S*)',
+    '(^|\s)(б|6)ля(\S*)',
+    '(\S*)ъ(е|e)(б|6)(\S*)',
+    '(\S*)ж(о|o|0)(п|n)(\S*)',
+    '(^|\s)и(п|n)(а|a)т(\S*)',
+    '(^|\s)(е|e|ё)(п|n)т(\S*)',
+    '(^|\s)и(п|n)(е|e)т(\s|$)',
+    '(^|\s)ии(п|n)(е|e)т(\s|$)',
+    '(^|\s)(х|x)(е|e)(р|p)(\S*)',
+    '(^|\s)и(п|n)(а|a)(л|ть)(\S*)',
+    '(\S*)м(у|y)д(о|а|o|a|@)(\S*)',
+    '(\S*)пид(а|о|o|a|@)(р|p)(\S*)',
+    '(^|\s)д(р|p)(о|o|0)(ч|4)(\S*)',
+    '(^|\s)(с|c)(у|y)(к|k)(а|a)(\S*)',
+    '(\S*)(х|x)(у|y)(й|и|я|е|e)(\S*)',
+    '(\S*)г(а|о|0|o|a)нд(0|о|o)н(\S*)',
+    '(^|\s)(з|3)(а|a)л(у|y)(п|n)(\S*)',
+    '(^|\s)(е|ё|e)(б|6)(а|a)(p|р)(\S*)',
+    '(^|\s)(а|о)к(у|y)(е|e)нн(а|о)(\S*)',
+    '(\S*)(е|e)(б|6)(а|@)(т|н|t|h)(\S*)',
+    '(^|\s)(с|c)(р|p)(а|a)(к|т|k|t)(\S*)',
+    '(^|\s)(n|п)(о|o|0)(x|х)(e|е)(p|р)(\S*)',
+    '(^|\s)(п|n)(и|e|е)(с|c|з|3)д(а|a)(\S*)',
+    '(^|\s)(с|c|3|з)(а|a)(е|e)пи(с|c)ь(\s|$)'
+    '(^|\s)(n|п)(o|0|о)(е|e)(б|6)(е|e)н(ь|ъ)(\s|$)',
+    '(\S*)(п(и|e|е)|3\.14)(з|3|c|с)(д|т)(а|a|e|е)(\S*)',
+]))
 
 def vova_yibash():
     try:
@@ -111,13 +139,12 @@ async def rusnyava_mova(room, message):
 
     if match.is_not_from_this_bot():
         message = " ".join(match.args())
-        print(message)
+        filtered = ' '.join([w for w in message.split(' ') if not any([sw.search(w) for sw in swearwords])])
         try:
-            results = detect_langs(message)
-            for result in results:
+            for result in detect_langs(filtered):
                 if result.lang == 'ru' and result.prob > 0.9:
                     await bot.api.send_text_message(room.room_id, "адмін, русня у чаті")
-        except Exception as e:
+        except LangDetectException as e:
             print(f"Error in rusnyava_mova: {e}")
 
 bot.run()
